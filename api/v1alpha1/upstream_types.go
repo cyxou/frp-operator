@@ -232,10 +232,32 @@ type UpstreamSpec_UDP struct {
 	Host   string                  `json:"host"`
 	Port   int                     `json:"port"`
 	Server UpstreamSpec_UDP_Server `json:"server"`
+	// +kubebuilder:validation:Enum=v1;v2
+	// +optional
+	ProxyProtocol *string `json:"proxyProtocol,omitempty"`
+	// +optional
+	Transport *UpstreamSpec_UDP_Transport `json:"transport,omitempty"`
 }
 
 type UpstreamSpec_UDP_Server struct {
 	Port int `json:"port"`
+}
+
+type UpstreamSpec_UDP_Transport struct {
+	// +kubebuilder:default=true
+	UseEncryption bool `json:"useEncryption"`
+	// +kubebuilder:default=false
+	UseCompression bool `json:"useCompression"`
+	// +optional
+	BandwidthLimit *UpstreamSpec_UDP_Transport_BandwidthLimit `json:"bandwidthLimit"`
+}
+
+type UpstreamSpec_UDP_Transport_BandwidthLimit struct {
+	// +kubebuilder:default=false
+	Enabled bool `json:"enabled"`
+	Limit   int  `json:"limit"`
+	// +kubebuilder:validation:Enum=KB;MB
+	Type string `json:"type"`
 }
 
 // UpstreamStatus defines the observed state of Upstream

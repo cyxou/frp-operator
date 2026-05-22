@@ -4,6 +4,39 @@ Expose your service in Kubernetes to the Internet with open source FRP!
 
 ![Version: 1.5.0](https://img.shields.io/badge/Version-1.5.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.7.0](https://img.shields.io/badge/AppVersion-0.7.0-informational?style=flat-square) [![made with Go](https://img.shields.io/badge/made%20with-Go-brightgreen)](http://golang.org) [![Github main branch build](https://img.shields.io/github/workflow/status/zufardhiyaulhaq/frp-operator/Main)](https://github.com/zufardhiyaulhaq/frp-operator/actions/workflows/main.yml) [![GitHub issues](https://img.shields.io/github/issues/zufardhiyaulhaq/frp-operator)](https://github.com/zufardhiyaulhaq/frp-operator/issues) [![GitHub pull requests](https://img.shields.io/github/issues-pr/zufardhiyaulhaq/frp-operator)](https://github.com/zufardhiyaulhaq/frp-operator/pulls)[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/frp-operator)](https://artifacthub.io/packages/search?repo=frp-operator)
 
+## Features
+
+**Custom Resources**
+- `Client` — declarative FRP client instance connecting to an external FRP server
+- `Upstream` — a Kubernetes Service/port exposed through FRP
+- `Visitor` — inbound tunnel that consumes another client's STCP/XTCP `Upstream` (for P2P scenarios)
+
+**Upstream protocols**
+- `TCP` and `UDP` — straightforward port forwarding with optional health checks and bandwidth limits
+- `STCP` — secret-key TCP, private to clients that share the key (with `allowUsers`)
+- `XTCP` — encrypted peer-to-peer with NAT traversal, including the `enableAssistedAddrs` toggle for STUN-only or full address discovery
+- `HTTP` / `HTTPS` — virtual-host routing, custom headers, locations, basic auth, and per-route health checks
+- `TCPMUX` — multiplexed TCP for sharing a single server port across upstreams
+
+**Secure access to the FRP Server**
+- Token authentication (sourced from Kubernetes `Secret`)
+- OIDC authentication
+- TLS to the FRP server, including mutual TLS verification
+- STCP/XTCP secret keys and `allowUsers` (sourced from Kubernetes `Secret`)
+
+**Advanced traffic features**
+- FRP plugins on `Upstream` (e.g. static_file, unix_domain_socket, http_proxy, socks5, https2http, etc.)
+- Transport tuning per `Upstream` (protocol, pool count, multiplex, bandwidth limits)
+- Load balancing across upstreams via FRP groups
+- Group-level health checks
+
+**Operational features**
+- Pod templates on `Client` to set resources, node selectors, tolerations, labels, annotations, affinity, security context, and more
+- Reliable, restart-free config reload — operator `exec`s into the pod and verifies `/frp/config.toml` matches the expected state before triggering the FRP admin API reload
+- Validation for duplicate `Upstream` server ports and duplicate `Visitor` ports, surfaced via descriptive errors
+- Helm chart with native CRDs and RBAC
+- Secure metrics endpoint served directly by the manager on `:8443` using Kubernetes TokenReview / SubjectAccessReview (no `kube-rbac-proxy` sidecar)
+
 ## Document
 1. [RFC: Fast Reverse Proxy Operator](https://docs.google.com/document/d/18_X4KKLNMAFcfYP-Nh0wwU31RP903IrLuc1Uemxcpoo)
 

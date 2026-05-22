@@ -232,9 +232,23 @@ type Upstream_TCP_Transport_BandwidthLimit struct {
 }
 
 type Upstream_UDP struct {
-	Host       string
-	Port       int
-	ServerPort int
+	Host          string
+	Port          int
+	ServerPort    int
+	ProxyProtocol *string
+	Transport     *Upstream_UDP_Transport
+}
+
+type Upstream_UDP_Transport struct {
+	UseCompression bool
+	UseEncryption  bool
+	BandwidthLimit *Upstream_UDP_Transport_BandwidthLimit
+}
+
+type Upstream_UDP_Transport_BandwidthLimit struct {
+	Enabled bool
+	Limit   int
+	Type    string
 }
 
 type Upstream_HTTP struct {
@@ -676,6 +690,25 @@ func NewConfig(k8sclient client.Client,
 			upstream.UDP.Host = upstreamObject.Spec.UDP.Host
 			upstream.UDP.Port = upstreamObject.Spec.UDP.Port
 			upstream.UDP.ServerPort = upstreamObject.Spec.UDP.Server.Port
+
+			if upstreamObject.Spec.UDP.ProxyProtocol != nil {
+				upstream.UDP.ProxyProtocol = upstreamObject.Spec.UDP.ProxyProtocol
+			}
+
+			if upstreamObject.Spec.UDP.Transport != nil {
+				upstream.UDP.Transport = &Upstream_UDP_Transport{
+					UseCompression: upstreamObject.Spec.UDP.Transport.UseCompression,
+					UseEncryption:  upstreamObject.Spec.UDP.Transport.UseEncryption,
+				}
+
+				if upstreamObject.Spec.UDP.Transport.BandwidthLimit != nil {
+					upstream.UDP.Transport.BandwidthLimit = &Upstream_UDP_Transport_BandwidthLimit{
+						Enabled: upstreamObject.Spec.UDP.Transport.BandwidthLimit.Enabled,
+						Limit:   upstreamObject.Spec.UDP.Transport.BandwidthLimit.Limit,
+						Type:    upstreamObject.Spec.UDP.Transport.BandwidthLimit.Type,
+					}
+				}
+			}
 		}
 
 		if upstreamObject.Spec.STCP != nil {

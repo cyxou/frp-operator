@@ -103,9 +103,23 @@ type testUpstreamTCP struct {
 }
 
 type testUpstreamUDP struct {
-	Host       string
-	Port       int
-	ServerPort int
+	Host          string
+	Port          int
+	ServerPort    int
+	ProxyProtocol *string
+	Transport     *testUpstreamUDPTransport
+}
+
+type testUpstreamUDPTransport struct {
+	UseCompression bool
+	UseEncryption  bool
+	BandwidthLimit *testUpstreamUDPBandwidthLimit
+}
+
+type testUpstreamUDPBandwidthLimit struct {
+	Enabled bool
+	Limit   int
+	Type    string
 }
 
 type testUpstreamSTCP struct {
@@ -489,6 +503,76 @@ func TestTemplateUDPUpstream(t *testing.T) {
 	assertContains(t, output, `localIP = "localhost"`)
 	assertContains(t, output, `localPort = 53`)
 	assertContains(t, output, `remotePort = 5353`)
+}
+
+func TestTemplateUDPUpstreamWithProxyProtocol(t *testing.T) {
+	proxyProtocol := "v2"
+	config := testConfig{
+		Common: testCommon{
+			ServerAddress: "frp.example.com",
+			ServerPort:    7000,
+			AdminAddress:  "0.0.0.0",
+			AdminPort:     7400,
+			AdminUsername: "admin",
+			AdminPassword: "secret",
+		},
+		Upstreams: []testUpstream{
+			{
+				Name: "udp-service",
+				Type: 2,
+				UDP: testUpstreamUDP{
+					Host:          "localhost",
+					Port:          53,
+					ServerPort:    5353,
+					ProxyProtocol: &proxyProtocol,
+				},
+			},
+		},
+	}
+
+	output := renderTemplate(t, config)
+
+	assertContains(t, output, `transport.proxyProtocolVersion = "v2"`)
+}
+
+func TestTemplateUDPUpstreamWithTransport(t *testing.T) {
+	config := testConfig{
+		Common: testCommon{
+			ServerAddress: "frp.example.com",
+			ServerPort:    7000,
+			AdminAddress:  "0.0.0.0",
+			AdminPort:     7400,
+			AdminUsername: "admin",
+			AdminPassword: "secret",
+		},
+		Upstreams: []testUpstream{
+			{
+				Name: "udp-service",
+				Type: 2,
+				UDP: testUpstreamUDP{
+					Host:       "localhost",
+					Port:       53,
+					ServerPort: 5353,
+					Transport: &testUpstreamUDPTransport{
+						UseEncryption:  true,
+						UseCompression: true,
+						BandwidthLimit: &testUpstreamUDPBandwidthLimit{
+							Enabled: true,
+							Limit:   10,
+							Type:    "MB",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	output := renderTemplate(t, config)
+
+	assertContains(t, output, `transport.useEncryption = true`)
+	assertContains(t, output, `transport.useCompression = true`)
+	assertContains(t, output, `transport.bandwidthLimit = "10MB"`)
+	assertContains(t, output, `transport.bandwidthLimitMode = "client"`)
 }
 
 func TestTemplateSTCPUpstream(t *testing.T) {

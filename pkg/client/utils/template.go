@@ -171,6 +171,21 @@ type = "udp"
 localIP = "{{ $upstream.UDP.Host }}"
 localPort = {{ $upstream.UDP.Port }}
 remotePort = {{ $upstream.UDP.ServerPort }}
+
+{{ if $upstream.UDP.ProxyProtocol }}
+transport.proxyProtocolVersion = "{{ $upstream.UDP.ProxyProtocol }}"
+{{ end }}
+
+{{ if $upstream.UDP.Transport }}
+transport.useEncryption = {{ $upstream.UDP.Transport.UseEncryption }}
+transport.useCompression = {{ $upstream.UDP.Transport.UseCompression }}
+{{ if $upstream.UDP.Transport.BandwidthLimit }}
+{{ if $upstream.UDP.Transport.BandwidthLimit.Enabled }}
+transport.bandwidthLimit = "{{ $upstream.UDP.Transport.BandwidthLimit.Limit }}{{ $upstream.UDP.Transport.BandwidthLimit.Type }}"
+transport.bandwidthLimitMode = "client"
+{{ end }}
+{{ end }}
+{{ end }}
 {{ end }}
 
 {{ if eq $upstream.Type 3 }}

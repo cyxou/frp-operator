@@ -1,0 +1,21 @@
+# UDP Upstream with Proxy Protocol and transport tuning
+apiVersion: frp.zufardhiyaulhaq.com/v1alpha1
+kind: Upstream
+metadata:
+  name: dns
+  namespace: default
+spec:
+  client: client-01
+  udp:
+    host: dns-service.default.svc.cluster.local
+    port: 53
+    server:
+      port: 6002
+    proxyProtocol: v2
+    transport:
+      useEncryption: true
+      useCompression: true
+      bandwidthLimit:
+        enabled: true
+        limit: 1024
+        type: MB

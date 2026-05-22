@@ -476,6 +476,96 @@ func TestConfigurationBuilder_Build(t *testing.T) {
 			},
 		},
 		{
+			name: "UDP upstream with proxy protocol",
+			config: models.Config{
+				Common: basicCommon(),
+				Upstreams: []models.Upstream{
+					{
+						Name: "udp-with-proxy-protocol",
+						Type: 2,
+						UDP: models.Upstream_UDP{
+							Host:          "127.0.0.1",
+							Port:          53,
+							ServerPort:    5353,
+							ProxyProtocol: stringPtr("v2"),
+						},
+					},
+				},
+			},
+			wantErr: false,
+			wantContains: []string{
+				`name = "udp-with-proxy-protocol"`,
+				`type = "udp"`,
+				`transport.proxyProtocolVersion = "v2"`,
+			},
+		},
+		{
+			name: "UDP upstream with transport",
+			config: models.Config{
+				Common: basicCommon(),
+				Upstreams: []models.Upstream{
+					{
+						Name: "udp-with-transport",
+						Type: 2,
+						UDP: models.Upstream_UDP{
+							Host:       "127.0.0.1",
+							Port:       53,
+							ServerPort: 5353,
+							Transport: &models.Upstream_UDP_Transport{
+								UseEncryption:  true,
+								UseCompression: true,
+								BandwidthLimit: &models.Upstream_UDP_Transport_BandwidthLimit{
+									Enabled: true,
+									Limit:   100,
+									Type:    "MB",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: false,
+			wantContains: []string{
+				`name = "udp-with-transport"`,
+				`type = "udp"`,
+				`transport.useEncryption = true`,
+				`transport.useCompression = true`,
+				`transport.bandwidthLimit = "100MB"`,
+				`transport.bandwidthLimitMode = "client"`,
+			},
+		},
+		{
+			name: "UDP upstream without transport renders no transport lines",
+			config: models.Config{
+				Common: basicCommon(),
+				Upstreams: []models.Upstream{
+					{
+						Name: "udp-plain",
+						Type: 2,
+						UDP: models.Upstream_UDP{
+							Host:       "127.0.0.1",
+							Port:       53,
+							ServerPort: 5353,
+						},
+					},
+				},
+			},
+			wantErr: false,
+			wantContains: []string{
+				`name = "udp-plain"`,
+				`type = "udp"`,
+				`localIP = "127.0.0.1"`,
+				`localPort = 53`,
+				`remotePort = 5353`,
+			},
+			wantNotContain: []string{
+				`transport.proxyProtocolVersion`,
+				`transport.useEncryption`,
+				`transport.useCompression`,
+				`transport.bandwidthLimit`,
+			},
+		},
+		{
 			name: "STCP upstream - basic",
 			config: models.Config{
 				Common: basicCommon(),

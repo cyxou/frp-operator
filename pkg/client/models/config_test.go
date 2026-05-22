@@ -886,6 +886,94 @@ func TestNewConfig_UDPUpstream(t *testing.T) {
 	}
 }
 
+func TestNewConfig_UDPUpstreamWithProxyProtocol(t *testing.T) {
+	fakeClient := createFakeClient(createDefaultTokenSecret("default")).Build()
+	clientObj := createBasicClient("default", "test-client", "frp.example.com", 7000)
+
+	proxyProtocol := "v2"
+	upstreams := []frpv1alpha1.Upstream{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "udp-upstream"},
+			Spec: frpv1alpha1.UpstreamSpec{
+				UDP: &frpv1alpha1.UpstreamSpec_UDP{
+					Host:          "127.0.0.1",
+					Port:          53,
+					Server:        frpv1alpha1.UpstreamSpec_UDP_Server{Port: 5353},
+					ProxyProtocol: &proxyProtocol,
+				},
+			},
+		},
+	}
+
+	config, err := NewConfig(fakeClient, clientObj, upstreams, []frpv1alpha1.Visitor{})
+	if err != nil {
+		t.Fatalf("NewConfig() unexpected error = %v", err)
+	}
+
+	upstream := config.Upstreams[0]
+	if upstream.UDP.ProxyProtocol == nil {
+		t.Fatalf("NewConfig() upstream.UDP.ProxyProtocol = nil, want %q", "v2")
+	}
+	if *upstream.UDP.ProxyProtocol != "v2" {
+		t.Errorf("NewConfig() upstream.UDP.ProxyProtocol = %v, want %v", *upstream.UDP.ProxyProtocol, "v2")
+	}
+}
+
+func TestNewConfig_UDPUpstreamWithTransport(t *testing.T) {
+	fakeClient := createFakeClient(createDefaultTokenSecret("default")).Build()
+	clientObj := createBasicClient("default", "test-client", "frp.example.com", 7000)
+
+	upstreams := []frpv1alpha1.Upstream{
+		{
+			ObjectMeta: metav1.ObjectMeta{Name: "udp-upstream"},
+			Spec: frpv1alpha1.UpstreamSpec{
+				UDP: &frpv1alpha1.UpstreamSpec_UDP{
+					Host:   "127.0.0.1",
+					Port:   53,
+					Server: frpv1alpha1.UpstreamSpec_UDP_Server{Port: 5353},
+					Transport: &frpv1alpha1.UpstreamSpec_UDP_Transport{
+						UseEncryption:  true,
+						UseCompression: true,
+						BandwidthLimit: &frpv1alpha1.UpstreamSpec_UDP_Transport_BandwidthLimit{
+							Enabled: true,
+							Limit:   100,
+							Type:    "MB",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	config, err := NewConfig(fakeClient, clientObj, upstreams, []frpv1alpha1.Visitor{})
+	if err != nil {
+		t.Fatalf("NewConfig() unexpected error = %v", err)
+	}
+
+	upstream := config.Upstreams[0]
+	if upstream.UDP.Transport == nil {
+		t.Fatalf("NewConfig() upstream.UDP.Transport = nil, want non-nil")
+	}
+	if !upstream.UDP.Transport.UseEncryption {
+		t.Errorf("NewConfig() upstream.UDP.Transport.UseEncryption = false, want true")
+	}
+	if !upstream.UDP.Transport.UseCompression {
+		t.Errorf("NewConfig() upstream.UDP.Transport.UseCompression = false, want true")
+	}
+	if upstream.UDP.Transport.BandwidthLimit == nil {
+		t.Fatalf("NewConfig() upstream.UDP.Transport.BandwidthLimit = nil, want non-nil")
+	}
+	if !upstream.UDP.Transport.BandwidthLimit.Enabled {
+		t.Errorf("NewConfig() BandwidthLimit.Enabled = false, want true")
+	}
+	if upstream.UDP.Transport.BandwidthLimit.Limit != 100 {
+		t.Errorf("NewConfig() BandwidthLimit.Limit = %v, want 100", upstream.UDP.Transport.BandwidthLimit.Limit)
+	}
+	if upstream.UDP.Transport.BandwidthLimit.Type != "MB" {
+		t.Errorf("NewConfig() BandwidthLimit.Type = %v, want MB", upstream.UDP.Transport.BandwidthLimit.Type)
+	}
+}
+
 func TestNewConfig_STCPUpstream(t *testing.T) {
 	secretKeySecret := createSecret("default", "stcp-secret", map[string][]byte{
 		"key": []byte("stcp-secret-key"),
