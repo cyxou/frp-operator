@@ -150,6 +150,7 @@ type testUpstreamHTTP struct {
 type testUpstreamHTTPS struct {
 	Host          string
 	Port          int
+	Subdomain     string
 	CustomDomains []string
 	ProxyProtocol *string
 	Transport     *testTransport
