@@ -33,7 +33,23 @@ development manually run the operator, check the logs, apply the examples, and c
 We are using Helm chart to release the FRP-Operator. after updating RBAC, CRDs, and charts version
 ```bash
 make readme                # update readme in charts and root directory
-make helm.create.releases. # create a new helm charts version
+make helm.create.releases  # create a new helm charts version
+```
+
+### OCI Chart Publishing
+
+Helm charts are published as OCI artifacts to GitHub Container Registry (ghcr.io).
+This happens automatically via the `chart` job in `.github/workflows/publish.yml`
+when a version tag (`v*.*.*`) is pushed.
+
+Users install the chart from OCI:
+```bash
+helm install frp-operator oci://ghcr.io/zufardhiyaulhaq/frp-operator
+```
+
+For local testing, push manually (requires `helm registry login ghcr.io`):
+```bash
+make helm.push.oci         # package and push chart to ghcr.io as OCI artifact
 ```
 
 ## Architecture
