@@ -133,10 +133,13 @@ type UpstreamSpec_HTTP_HealthCheck struct {
 type UpstreamSpec_HTTPS struct {
 	Host          string   `json:"host"`
 	Port          int      `json:"port"`
-	CustomDomains []string `json:"customDomains"`
+	// +optional
+	Subdomain     string   `json:"subdomain,omitempty"`
+	// +optional
+	CustomDomains []string `json:"customDomains,omitempty"`
 	// +kubebuilder:validation:Enum=v1;v2
 	// +optional
-	ProxyProtocol *string `json:"proxyProtocol,omitempty"`
+	ProxyProtocol *string  `json:"proxyProtocol,omitempty"`
 	// +optional
 	Transport *UpstreamSpec_TCP_Transport `json:"transport,omitempty"`
 }
