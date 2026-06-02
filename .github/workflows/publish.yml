@@ -91,4 +91,4 @@ jobs:
         run: echo "version=$(grep '^version:' charts/frp-operator/Chart.yaml | awk '{print $2}')" >> $GITHUB_OUTPUT
 
       - name: Publish Helm chart to GHCR
-        run: helm push charts/releases/frp-operator-${{ steps.chart.outputs.version }}.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}
+        run: helm push charts/releases/frp-operator-${{ steps.chart.outputs.version }}.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts

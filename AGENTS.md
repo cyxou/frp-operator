@@ -44,7 +44,7 @@ when a version tag (`v*.*.*`) is pushed.
 
 Users install the chart from OCI:
 ```bash
-helm install frp-operator oci://ghcr.io/zufardhiyaulhaq/frp-operator
+helm install frp-operator oci://ghcr.io/zufardhiyaulhaq/charts/frp-operator
 ```
 
 For local testing, push manually (requires `helm registry login ghcr.io`):

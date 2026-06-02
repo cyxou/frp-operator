@@ -257,4 +257,4 @@ helm.create.releases:
 .PHONY: helm.push.oci
 helm.push.oci:
 	helm package charts/frp-operator --destination charts/releases
-	helm push charts/releases/frp-operator-$$(grep '^version:' charts/frp-operator/Chart.yaml | awk '{print $$2}')\.tgz oci://ghcr.io/zufardhiyaulhaq
+	helm push charts/releases/frp-operator-$$(grep '^version:' charts/frp-operator/Chart.yaml | awk '{print $$2}')\.tgz oci://ghcr.io/zufardhiyaulhaq/charts
